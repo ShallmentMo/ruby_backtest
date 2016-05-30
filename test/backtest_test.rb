@@ -1,7 +1,7 @@
 require 'test_helper'
 
-class BacktestTest < Minitest::Test
-  def test_that_it_has_a_version_number
+describe 'Backtest' do
+  it 'test has a version number' do
     refute_nil ::Backtest::VERSION
   end
 end
