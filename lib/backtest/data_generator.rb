@@ -1,15 +1,13 @@
 module Backtest
   # Generator backtest data from different source
   # Now only support json file
-  class DataGenerator
-    attr_reader :data
-
-    def initialize(path)
-      file = File.new(path)
-      @data = JSON.parse(file.readline)
+  module DataGenerator
+    def self.generate(code)
+      file = File.new("./lib/#{code}.json")
+      JSON.parse(file.readline)
     end
 
-    def k_lines
+    def self.k_lines(data)
       return @k_lines unless @k_lines.nil?
 
       dates = data.map { |object| object['date'] }
