@@ -13,12 +13,14 @@ module Backtest
     # 正数的 amount 代表买入，负数的 amount 代表卖出
     # 需要考虑是否是涨停，跌停
     def order(code, amount)
-      price_date = Date.strptime(current_date, '%F').next
+      price_date = current_date.next
       object = nil
 
       loop do
-        if $dates.include?(price_date.strftime('%Y-%-m-%e'))
-          object = $universe[code].find { |o| o['date'] == price_date.strftime('%F') }
+        if Data.open_dates.include? price_date.strftime(Data::DATE_FORMAT)
+          object = Data.stock(code).find do |o|
+            o['date'] == price_date.strftime(Data::DATE_FORMAT)
+          end
           break if object
         end
         price_date = price_date.next
@@ -51,8 +53,10 @@ module Backtest
     def capital(date)
       worth = 0
       @holdings.each_pair do |code, amount|
-        object = $universe[code].find { |o| o['date'] == date.strftime('%F') }
-        price = BigDecimal.new("#{object['open']}")
+        object = Data.stock(code).find do |o|
+          o['date'] == date.strftime(Data::DATE_FORMAT)
+        end
+        price = BigDecimal.new(object['open'].to_s)
         worth += price * amount
       end
 

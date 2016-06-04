@@ -1,8 +1,8 @@
 require 'test_helper'
 
-describe 'DataGenerator' do
+describe 'Data' do
   before do
-    @data = Backtest::DataGenerator.generate('600036')
+    @data = Backtest::Data.stock('600036')
   end
 
   it 'test store data' do
@@ -10,6 +10,6 @@ describe 'DataGenerator' do
   end
 
   it 'test show k_lines' do
-    refute_nil Backtest::DataGenerator.k_lines(@data)
+    refute_nil Backtest::Data.k_lines(@data)
   end
 end
