@@ -35,7 +35,8 @@ module Backtest
           code: code,
           amount: amount,
           price: price,
-          total_price: total_price
+          total_price: total_price,
+          trade_at: current_date.strftime(Data::DATE_FORMAT)
         }
       elsif amount < 0 && @holdings[code] + amount >= 0
         # 需要卖出，并且有足够的持仓可以卖出
@@ -45,7 +46,8 @@ module Backtest
           code: code,
           amount: amount,
           price: price,
-          total_price: total_price
+          total_price: total_price,
+          trade_at: current_date.strftime(Data::DATE_FORMAT)
         }
       end
     end
