@@ -3,7 +3,7 @@ module Backtest
   class Strategy
     extend Forwardable
     attr_reader :start_date, :end_date, :frequency, :trade_frequency, :capital,
-                :universe
+                :universe, :benchmark
     attr_accessor :account
 
     def initialize(start_date: Date.today.prev_year.strftime('%F'),
