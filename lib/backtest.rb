@@ -37,5 +37,27 @@ module Backtest
     end
     puts account.history
     puts account.capital(price_date)
+
+    # 用 hs00300 来做 benchmark
+    benchmark_data = Data.stock(strategy.benchmark)
+    benchmark_result = []
+    benchmark_init = nil
+    (start_date..end_date).each do |date|
+      next unless Data.open_dates.include? date.strftime(Data::DATE_FORMAT)
+
+      object = benchmark_data.find do |o|
+        o['tradeDate'] == date.strftime(Data::DATE_FORMAT)
+      end
+
+      next if object.nil?
+
+      benchmark_init = object['closeIndex'] if benchmark_init.nil?
+      change = (object['closeIndex'] - benchmark_init).to_f / benchmark_init
+      benchmark_result << {
+        'date' => date.strftime(Data::DATE_FORMAT),
+        'change' => change
+      }
+    end
+    puts benchmark_result
   end
 end

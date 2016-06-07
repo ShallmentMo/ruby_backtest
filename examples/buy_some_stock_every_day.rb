@@ -6,6 +6,6 @@ class BuySomeStockEveryDayStrategy < Backtest::Strategy
   end
 end
 
-strategy = BuySomeStockEveryDayStrategy.new(end_date: '2016-04-01', start_date: '2003-01-01', universe: %w(600036), capital: 1_000_000, trade_frequency: 2)
+strategy = BuySomeStockEveryDayStrategy.new(end_date: '2016-04-01', start_date: '2003-01-01', universe: %w(600036), capital: 1_000_000, trade_frequency: 2, benchmark: '000300')
 
 Backtest.test strategy
