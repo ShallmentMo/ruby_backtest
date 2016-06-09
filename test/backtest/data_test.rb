@@ -8,8 +8,4 @@ describe 'Data' do
   it 'test store data' do
     assert @data.is_a?(Array)
   end
-
-  it 'test show k_lines' do
-    refute_nil Backtest::Data.k_lines(@data)
-  end
 end
