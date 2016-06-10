@@ -35,8 +35,8 @@ module Backtest
       break if Data.open_dates.include?(price_date.strftime(Data::DATE_FORMAT))
       price_date = price_date.prev_day
     end
-    puts account.history
-    puts account.capital(price_date)
+    # puts account.history
+    # puts account.capital(price_date)
 
     # 用 hs00300 来做 benchmark
     benchmark_data = Data.stock(strategy.benchmark)
@@ -58,6 +58,6 @@ module Backtest
         'change' => change
       }
     end
-    puts benchmark_result
+    # puts benchmark_result
   end
 end
