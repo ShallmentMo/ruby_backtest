@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Backtest</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  </head>
+  <body>
+    <div>
+    </div>
+  </body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Backtest</title>
+    <style type="text/css" media="screen">
+      #editor {
+        position: absolute;
+        top: 0;
+        bottom: 40px;
+        left: 0;
+        width: 50%;
+      }
+      #charts {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 40px;
+        width: 50%;
+      }
+      #buttons {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 40px;
+      }
+      #buttons button {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="editor"></div>
+    <div id="charts"></div>
+    <div id="buttons">
+      <button id="submit-button">提交</button>
+    </div>
+
+    <script src="/javascripts/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/javascripts/jquery-1.11.3.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/javascripts/highstock-all.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+      var editor = ace.edit("editor");
+      editor.setTheme("ace/theme/monokai");
+      editor.getSession().setMode("ace/mode/ruby");
+
+      $('#submit-button').click(function () {
+        $.post('/backtest', function(resp) {
+          $('#charts').html('').append(resp);
+        })
+      });
+    </script>
+
+  </body>
+</html>

@@ -1,5 +1,4 @@
 require 'json'
-require 'gnuplotrb'
 require 'bigdecimal'
 
 Dir['./lib/backtest/*.rb'].each { |file| require file }
