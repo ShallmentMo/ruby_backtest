@@ -17,6 +17,9 @@ module Backtest
     end
 
     post '/backtest' do
+      # santize params, error handling
+      @code = params['code']
+      @strategy = eval(@code)
       erb :chart
     end
   end

@@ -41,7 +41,15 @@
     </style>
   </head>
   <body>
-    <div id="editor"></div>
+    <div id="editor">
+      class BuySomeStockEveryDayStrategy < Backtest::Strategy
+        def handle
+          order('600036', 100)
+        end
+      end
+
+      BuySomeStockEveryDayStrategy.new(end_date: '2016-04-01', start_date: '2003-01-01', universe: %w(600036), capital: 1_000_000, trade_frequency: 2, benchmark: '000300')
+    </div>
     <div id="charts"></div>
     <div id="buttons">
       <button id="submit-button">提交</button>
@@ -56,7 +64,8 @@
       editor.getSession().setMode("ace/mode/ruby");
 
       $('#submit-button').click(function () {
-        $.post('/backtest', function(resp) {
+        var code = editor.getValue();
+        $.post('/backtest', { code: code }, function(resp) {
           $('#charts').html('').append(resp);
         })
       });
