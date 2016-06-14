@@ -20,6 +20,7 @@ module Backtest
       # santize params, error handling
       @code = params['code']
       @strategy = eval(@code)
+      Backtest.test @strategy
       erb :chart
     end
   end
