@@ -1,5 +1,6 @@
 require 'json'
 require 'bigdecimal'
+require 'forwardable'
 
 Dir['./lib/backtest/*.rb'].each { |file| require file }
 
@@ -29,13 +30,8 @@ module Backtest
     end
 
     # 根据 strategy 生成操作历史，收益情况
-    price_date = end_date
-    loop do
-      break if Data.open_dates.include?(price_date.strftime(Data::DATE_FORMAT))
-      price_date = price_date.prev_day
-    end
     # puts account.history
-    # puts account.capital(price_date)
+    # puts account.capital(end_date)
 
     # 用 hs00300 来做 benchmark
     benchmark_data = Data.stock(strategy.benchmark)
