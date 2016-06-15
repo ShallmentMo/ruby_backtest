@@ -1,91 +1,133 @@
 <% @strategy.universe.each do |code| %>
-<% id = "chart_#{code}" %>
-<div id="<%= id %>"></div>
+  <% id = "chart_#{code}" %>
+  <div id="<%= id %>"></div>
+  <script>
+    $(function () {
+      // split the data set into ohlc and volume
+      var data = JSON.parse('<%= Backtest::Data.stock(code).to_json %>');
+      var ohlc = [],
+      volume = [],
+      dataLength = data.length ,
+      // set the allowed units for data grouping
+      groupingUnits = [[
+        'week',                         // unit name
+        [1]                             // allowed multiples
+        ], [
+        'month',
+        [1, 2, 3, 4, 6]
+        ]],
+      i = 0;
+
+      for (i; i < dataLength; i += 1) {
+        ohlc.push([
+          new Date(data[i].date).getTime(), // the date
+          data[i].open, // open
+          data[i].high, // high
+          data[i].low, // low
+          data[i].close // close
+        ]);
+
+        volume.push([
+          new Date(data[i].date).getTime(), // the date
+          Number.parseFloat(data[i].volume) // the volume
+        ]);
+      }
+
+
+      // create the chart
+      $('#<%= id %>').highcharts('StockChart', {
+
+        rangeSelector: {
+          selected: 1
+        },
+
+        title: {
+          text: '<%= code %>'
+        },
+
+        yAxis: [{
+          labels: {
+            align: 'right',
+            x: -3
+          },
+          title: {
+            text: 'OHLC'
+          },
+          height: '60%',
+          lineWidth: 2
+        }, {
+          labels: {
+            align: 'right',
+            x: -3
+          },
+          title: {
+            text: 'Volume'
+          },
+          top: '65%',
+          height: '35%',
+          offset: 0,
+          lineWidth: 2
+        }],
+
+        series: [{
+          type: 'candlestick',
+          name: '<%= code %>',
+          data: ohlc,
+          dataGrouping: {
+            units: groupingUnits
+          }
+        }, {
+          type: 'column',
+          name: 'Volume',
+          data: volume,
+          yAxis: 1,
+          dataGrouping: {
+            units: groupingUnits
+          }
+        }]
+      });
+    });
+  </script>
+<% end %>
+
+<div id="benchmark"></div>
 <script>
   $(function () {
-    // split the data set into ohlc and volume
-    var data = JSON.parse('<%= Backtest::Data.stock(code).to_json %>');
-    var ohlc = [],
-    volume = [],
-    dataLength = data.length ,
-    // set the allowed units for data grouping
-    groupingUnits = [[
-      'week',                         // unit name
-      [1]                             // allowed multiples
-      ], [
-      'month',
-      [1, 2, 3, 4, 6]
-      ]],
-    i = 0;
+    function createChart() {
+      $('#benchmark').highcharts('StockChart', {
+        rangeSelector: {
+          selected: 4
+        },
 
-    for (i; i < dataLength; i += 1) {
-      ohlc.push([
-        new Date(data[i].date).getTime(), // the date
-        data[i].open, // open
-        data[i].high, // high
-        data[i].low, // low
-        data[i].close // close
-      ]);
+        yAxis: {
+          labels: {
+            formatter: function () {
+              return (this.value > 0 ? ' + ' : '') + this.value + '%';
+            }
+          },
+          plotLines: [{
+            value: 0,
+            width: 2,
+            color: 'silver'
+          }]
+        },
+        tooltip: {
+          pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}%</b><br/>',
+          valueDecimals: 2
+        },
 
-      volume.push([
-        new Date(data[i].date).getTime(), // the date
-        Number.parseFloat(data[i].volume) // the volume
-      ]);
+        series: seriesOptions
+      });
     }
 
-
-    // create the chart
-    $('#<%= id %>').highcharts('StockChart', {
-
-      rangeSelector: {
-        selected: 1
-      },
-
-      title: {
-        text: '<%= code %>'
-      },
-
-      yAxis: [{
-        labels: {
-          align: 'right',
-          x: -3
-        },
-        title: {
-          text: 'OHLC'
-        },
-        height: '60%',
-        lineWidth: 2
-      }, {
-        labels: {
-          align: 'right',
-          x: -3
-        },
-        title: {
-          text: 'Volume'
-        },
-        top: '65%',
-        height: '35%',
-        offset: 0,
-        lineWidth: 2
-      }],
-
-      series: [{
-        type: 'candlestick',
-        name: '<%= code %>',
-        data: ohlc,
-        dataGrouping: {
-          units: groupingUnits
-        }
-      }, {
-        type: 'column',
-        name: 'Volume',
-        data: volume,
-        yAxis: 1,
-        dataGrouping: {
-          units: groupingUnits
-        }
-      }]
-    });
+    var profit_percent_data = JSON.parse('<%= @profit_percent_data.to_json %>');
+    var seriesOptions = [];
+    seriesOptions.push({
+      name: 'profit',
+      data: profit_percent_data.map(function(o) {
+        return [new Date(o[0]).getTime(), o[1] * 100]
+      }),
+    })
+    createChart();
   });
 </script>
-<% end %>
