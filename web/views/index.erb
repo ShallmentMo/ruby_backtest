@@ -1,37 +1,33 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Backtest</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  </head>
-  <body>
-    <div>
-    </div>
-  </body>
-</html>
+
 
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <title>Backtest</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <style type="text/css" media="screen">
-      #editor {
+      .left {
         position: absolute;
         top: 0;
-        bottom: 40px;
+        bottom: 0;
         left: 0;
         width: 50%;
+      }
+      #editor {
+        position: absolute;
+        top: 40px;
+        bottom: 0;
+        left: 0;
+        width: 100%;
       }
       #charts {
         position: absolute;
         top: 0;
+        bottom: 0;
         right: 0;
-        bottom: 40px;
         width: 50%;
       }
       #buttons {
-        position: absolute;
-        bottom: 0;
         width: 100%;
         height: 40px;
       }
@@ -41,19 +37,21 @@
     </style>
   </head>
   <body>
-    <div id="editor">
-      class BuySomeStockEveryDayStrategy < Backtest::Strategy
-        def handle
-          order('600036', 100)
+    <div class="left">
+      <div id="buttons">
+        <button id="submit-button">提交</button>
+      </div>
+      <div id="editor">
+        class BuySomeStockEveryDayStrategy < Backtest::Strategy
+          def handle
+            order('600036', 100)
+          end
         end
-      end
 
-      BuySomeStockEveryDayStrategy.new(end_date: '2016-04-01', start_date: '2003-01-01', universe: %w(600036), capital: 1_000_000, trade_frequency: 2, benchmark: '000300')
+        BuySomeStockEveryDayStrategy.new(end_date: '2016-04-01', start_date: '2003-01-01', universe: %w(600036), capital: 1_000_000, trade_frequency: 2, benchmark: '000300')
+      </div>
     </div>
-    <div id="charts"></div>
-    <div id="buttons">
-      <button id="submit-button">提交</button>
-    </div>
+    <div id="charts" class="right"></div>
 
     <script src="/javascripts/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="/javascripts/jquery-1.11.3.min.js" type="text/javascript" charset="utf-8"></script>
