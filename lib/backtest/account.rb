@@ -1,8 +1,7 @@
 module Backtest
   # for account
   class Account
-    attr_accessor :current_date
-    attr_accessor :history
+    attr_accessor :current_date, :history
 
     def initialize(init_capital)
       @init_capital = init_capital
@@ -71,9 +70,9 @@ module Backtest
           price_date = price_date.prev_day
         end
         trade[:holdings].each_pair do |code, amount|
-          price_object = Data.stock(code).find do |o|
-            o['date'] == price_date.strftime(Data::DATE_FORMAT)
-          end
+          price_object = Data.stock(code).find_all do |o|
+            Date.strptime(o['date']) <= price_date
+          end.last
           price = BigDecimal.new(price_object['open'].to_s)
           worth += price * amount
         end
