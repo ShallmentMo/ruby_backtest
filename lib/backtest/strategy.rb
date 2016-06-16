@@ -4,7 +4,7 @@ module Backtest
     extend Forwardable
     attr_reader :start_date, :end_date, :frequency, :trade_frequency, :capital,
                 :universe, :benchmark
-    attr_accessor :account
+    attr_accessor :account, :benchmark_data
 
     def initialize(start_date: Date.today.prev_year.strftime('%F'),
                    end_date: Date.today.strftime('%F'),
