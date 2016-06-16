@@ -121,6 +121,7 @@
     }
 
     var profit_percent_data = JSON.parse('<%= @profit_percent_data.to_json %>');
+    var benchmark_data = JSON.parse('<%= @strategy.benchmark_data.to_json %>');
     var seriesOptions = [];
     seriesOptions.push({
       name: 'profit',
@@ -128,6 +129,13 @@
         return [new Date(o[0]).getTime(), o[1] * 100]
       }),
     })
+    seriesOptions.push({
+      name: 'benchmark',
+      data: benchmark_data.map(function(o) {
+        return [new Date(o['date']).getTime(), o['change'] * 100]
+      }),
+    })
+
     createChart();
   });
 </script>
