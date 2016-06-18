@@ -56,38 +56,75 @@ module Backtest
       end
     end
 
-    def capital(date)
-      worth = 0
-
-      prev_trades = @history.find_all do |trade|
-        Date.strptime(trade[:trade_at], Data::DATE_FORMAT) <= date
+    def capital(start_date_string, end_date_string = start_date_string)
+      start_date = Date.strptime(start_date_string, Data::DATE_FORMAT)
+      end_date = Date.strptime(end_date_string, Data::DATE_FORMAT)
+      result = []
+      start_trade_date =
+        @history.first &&
+        Date.strptime(@history.first[:trade_at], Data::DATE_FORMAT)
+      next_trade_date = start_trade_date
+      next_trade = @history.find do |trade|
+        Date.strptime(trade[:trade_at], Data::DATE_FORMAT) == next_trade_date
       end
-      unless prev_trades.empty?
-        trade = prev_trades.last
-        price_date = date
-        loop do
-          break if Data.open_dates.include?(price_date.strftime(Data::DATE_FORMAT))
-          price_date = price_date.prev_day
-        end
-        trade[:holdings].each_pair do |code, amount|
-          price_object = Data.stock(code).find_all do |o|
-            Date.strptime(o['date']) <= price_date
-          end.last
-          price = BigDecimal.new(price_object['open'].to_s)
-          worth += price * amount
-        end
-        {
-          cash: trade[:cash],
-          holdings: trade[:holdings],
-          worth: trade[:cash] + worth
-        }
-      else
-        {
+
+      (start_date..end_date).each do |date|
+        # 如果没有交易历史，或者在交易之前
+        (result << {
+          date: date.strftime(Data::DATE_FORMAT),
           cash: @init_capital,
           holdings: {},
           worth: @init_capital
-        }
+        } && next) if @history.first.nil? || date < start_trade_date
+
+        if date < next_trade_date
+          worth = 0
+          next_trade[:holdings].each_pair do |code, amount|
+            price_object = Data.stock(code).find_all do |o|
+              Date.strptime(o['date'], Data::DATE_FORMAT) <= date
+            end.last
+            price = BigDecimal.new(price_object['open'].to_s)
+            worth += price * amount
+          end
+          result << {
+            date: date.strftime(Data::DATE_FORMAT),
+            cash: next_trade[:cash],
+            holdings: next_trade[:holdings],
+            worth: next_trade[:cash] + worth
+          }
+          next
+        end
+
+        if date == next_trade_date
+          worth = 0
+          next_trade[:holdings].each_pair do |code, amount|
+            price_object = Data.stock(code).find_all do |o|
+              Date.strptime(o['date'], Data::DATE_FORMAT) <= date
+            end.last
+            price = BigDecimal.new(price_object['open'].to_s)
+            worth += price * amount
+          end
+          result << {
+            date: date.strftime(Data::DATE_FORMAT),
+            cash: next_trade[:cash],
+            holdings: next_trade[:holdings],
+            worth: next_trade[:cash] + worth
+          }
+          # find next_trade
+          next_trade_in_history = @history.find do |trade|
+            Date.strptime(trade[:trade_at], Data::DATE_FORMAT) > date
+          end
+          if next_trade_in_history
+            next_trade = next_trade_in_history
+            next_trade_date =
+              Date.strptime(next_trade[:trade_at], Data::DATE_FORMAT)
+          else
+            next_trade_date = end_date.next
+          end
+        end
       end
+
+      result
     end
   end
 end
