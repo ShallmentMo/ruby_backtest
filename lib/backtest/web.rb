@@ -21,14 +21,14 @@ module Backtest
       @code = params['code']
       @strategy = eval(@code)
       Backtest.test @strategy
-      start_date = Date.strptime @strategy.start_date
-      end_date = Date.strptime @strategy.end_date
-      @profit_percent_data = (start_date..end_date).to_a.map do |date|
-        capital = @strategy.account.capital(date)[:worth]
-        init_capital = @strategy.capital
-        profit_percent = (capital - init_capital).to_f / init_capital
-        [date.strftime(Data::DATE_FORMAT), profit_percent]
-      end
+      @profit_percent_data =
+        @strategy.account
+                 .capital(@strategy.start_date, @strategy.end_date).map do |o|
+          capital = o[:worth]
+          init_capital = @strategy.capital
+          profit_percent = (capital - init_capital).to_f / init_capital
+          [o[:date], profit_percent]
+        end
       erb :chart
     end
   end
