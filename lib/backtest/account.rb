@@ -67,6 +67,7 @@ module Backtest
       next_trade = @history.find do |trade|
         Date.strptime(trade[:trade_at], Data::DATE_FORMAT) == next_trade_date
       end
+      holdings_price_data = {}
 
       (start_date..end_date).each do |date|
         # 如果没有交易历史，或者在交易之前
@@ -80,9 +81,20 @@ module Backtest
         if date < next_trade_date
           worth = 0
           next_trade[:holdings].each_pair do |code, amount|
-            price_object = Data.stock(code).find_all do |o|
-              Date.strptime(o['date'], Data::DATE_FORMAT) <= date
-            end.last
+            unless holdings_price_data[code]
+              holdings_price_data[code] = {}
+              start_index = Data.stock(code).rindex do |o|
+                Date.strptime(o['date'], Data::DATE_FORMAT) <= start_date
+              end
+              (start_date..end_date).each do |d|
+                next_object = Data.stock(code)[start_index + 1]
+                start_index += 1 if Date.strptime(next_object['date']) <= d
+                holdings_price_data[code][d.strftime(Data::DATE_FORMAT)] =
+                  Data.stock(code)[start_index]
+              end
+            end
+            price_object =
+              holdings_price_data[code][date.strftime(Data::DATE_FORMAT)]
             price = BigDecimal.new(price_object['open'].to_s)
             worth += price * amount
           end
