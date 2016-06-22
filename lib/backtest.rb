@@ -1,6 +1,7 @@
 require 'json'
 require 'bigdecimal'
 require 'forwardable'
+require 'parallel'
 
 Dir['./lib/backtest/*.rb'].each { |file| require file }
 
@@ -37,7 +38,21 @@ module Backtest
     benchmark_index = Data.stock(strategy.benchmark)
     strategy.benchmark_data = []
     benchmark_init = nil
-    (start_date..end_date).each do |date|
+    init_date = start_date
+    # 找到 start_date 前的记录
+    loop do
+      object = benchmark_index.find do |o|
+        o['tradeDate'] == init_date.strftime(Data::DATE_FORMAT)
+      end
+
+      if object
+        benchmark_init = object['closeIndex']
+        break
+      end
+
+      init_date = init_date.prev_day
+    end
+    strategy.benchmark_data = Parallel.map(start_date..end_date) do |date|
       next unless Data.open_dates.include? date.strftime(Data::DATE_FORMAT)
 
       object = benchmark_index.find do |o|
@@ -46,13 +61,12 @@ module Backtest
 
       next if object.nil?
 
-      benchmark_init = object['closeIndex'] if benchmark_init.nil?
       change = (object['closeIndex'] - benchmark_init).to_f / benchmark_init
-      strategy.benchmark_data << {
+      {
         'date' => date.strftime(Data::DATE_FORMAT),
         'change' => change
       }
-    end
+    end.reject(&:nil?)
     # puts strategy.benchmark_data
   end
 end
