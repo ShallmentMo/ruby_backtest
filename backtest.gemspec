@@ -34,4 +34,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'sinatra', '~> 1.4', '>= 1.4.6'
   spec.add_development_dependency 'flamegraph', '~> 0.9.5'
   spec.add_development_dependency 'stackprof', '~> 0.2.9'
+  spec.add_development_dependency 'parallel', '~> 1.9.0'
 end
