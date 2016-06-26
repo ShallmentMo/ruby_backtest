@@ -35,18 +35,18 @@ module Backtest
     # puts account.capital(end_date)
 
     # 用 hs00300 来做 benchmark
-    benchmark_index = Data.stock(strategy.benchmark)
+    benchmark_index = Data.index(strategy.benchmark)
     strategy.benchmark_data = []
     benchmark_init = nil
     init_date = start_date
     # 找到 start_date 前的记录
     loop do
       object = benchmark_index.find do |o|
-        o['tradeDate'] == init_date.strftime(Data::DATE_FORMAT)
+        o['date'] == init_date.strftime(Data::DATE_FORMAT)
       end
 
       if object
-        benchmark_init = object['closeIndex']
+        benchmark_init = object['close']
         break
       end
 
@@ -56,12 +56,12 @@ module Backtest
       next unless Data.open_dates.include? date.strftime(Data::DATE_FORMAT)
 
       object = benchmark_index.find do |o|
-        o['tradeDate'] == date.strftime(Data::DATE_FORMAT)
+        o['date'] == date.strftime(Data::DATE_FORMAT)
       end
 
       next if object.nil?
 
-      change = (object['closeIndex'] - benchmark_init).to_f / benchmark_init
+      change = (object['close'] - benchmark_init).to_f / benchmark_init
       {
         'date' => date.strftime(Data::DATE_FORMAT),
         'change' => change

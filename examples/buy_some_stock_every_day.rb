@@ -12,6 +12,6 @@ strategy = BuySomeStockEveryDayStrategy.new(end_date: '2016-04-01', start_date: 
 Benchmark.bm do |x|
   x.report do
     Backtest.test strategy
-    # strategy.account.capital(strategy.start_date, strategy.end_date)
+    strategy.account.capital(strategy.start_date, strategy.end_date)
   end
 end

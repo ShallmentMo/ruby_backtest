@@ -35,4 +35,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'flamegraph', '~> 0.9.5'
   spec.add_development_dependency 'stackprof', '~> 0.2.9'
   spec.add_development_dependency 'parallel', '~> 1.9.0'
+  spec.add_development_dependency 'redis', '~> 3.3.0'
+  spec.add_development_dependency 'tushare', '~> 0.1.0'
 end
