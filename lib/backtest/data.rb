@@ -13,53 +13,57 @@ module Backtest
     end
 
     def self.universe
-      @universe ||= Hash.new({})
+      @universe ||= {}
     end
 
     def self.stock(code)
-      key = "stock_#{code}"
-      record_in_redis = redis.get(key)
-      return JSON.parse(record_in_redis) if record_in_redis
-
-      data = Tushare::Stock::Trading.get_h_data(code, '1990-12-01', Date.today.strftime(DATE_FORMAT), 'qfq')
-      redis.set(key, data.to_json)
-      data
+      process "stock_#{code}" do
+        Tushare::Stock::Trading.get_h_data(code, '1990-12-01', Date.today.strftime(DATE_FORMAT), 'qfq')
+      end
     end
 
     def self.index(code)
-      key = "index_#{code}"
-      record_in_redis = redis.get(key)
-      return JSON.parse(record_in_redis) if record_in_redis
-
-      data = Tushare::Datayes.mkt_idxd(ticker: '000300').map do |object|
-        object['date'] = object['tradeDate']
-        object['open'] = object['openIndex']
-        object['close'] = object['closeIndex']
-        object
+      process "index_#{code}" do
+        Tushare::Datayes.mkt_idxd(ticker: '000300').map do |object|
+          object['date'] = object['tradeDate']
+          object['open'] = object['openIndex']
+          object['close'] = object['closeIndex']
+          object
+        end
       end
-      redis.set(key, data.to_json)
-      data
     end
 
     def self.calendar
-      key = 'calendar'
-      record_in_redis = redis.get(key)
-      return JSON.parse(record_in_redis) if record_in_redis
-
-      data = Tushare::Stock::Trading.trade_cal.map do |object|
-        {
-          'date' => Date.strptime(object['date'], '%Y/%m/%e')
-                        .strftime(DATE_FORMAT),
-          'is_open' => object['is_open']
-        }
+      process 'calendar' do
+        Tushare::Stock::Trading.trade_cal.map do |object|
+          {
+            'date' => Date.strptime(object['date'], '%Y/%m/%e')
+                          .strftime(DATE_FORMAT),
+            'is_open' => object['is_open']
+          }
+        end
       end
-      redis.set(key, data.to_json)
-      data
     end
 
     def self.open_dates
       @open_dates ||= calendar.select { |object| object['is_open'] == '1' }
                               .map { |object| object['date'] }
     end
+
+    def self.process(key)
+      return universe[key] if universe[key]
+
+      record_in_redis = redis.get(key)
+      if record_in_redis
+        universe[key] = JSON.parse(record_in_redis)
+        return universe[key]
+      end
+
+      data = yield
+      universe[key] = data
+      redis.set(key, data.to_json)
+      data
+    end
+    private_class_method :process
   end
 end
