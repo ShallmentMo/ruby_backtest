@@ -55,10 +55,15 @@ module Backtest
       end
       volatility = Math.sqrt(365 / (days - 1) * variance_of_daily_returns)
 
+      # 计算夏普比率 sharpe_ratio
+      # 这里用的无风险利率是一年期定存利率 1.5%
+      sharpe_ratio = (annualized_returns - 0.015) / volatility
+
       {
         annualized_returns: annualized_returns.to_f.round(4),
         benchmark_annualized_returns:
           benchmark_annualized_returns.to_f.round(4),
+        sharpe_ratio: sharpe_ratio.to_f.round(4),
         volatility: volatility.round(4)
       }
     end
