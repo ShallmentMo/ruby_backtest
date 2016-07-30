@@ -21,12 +21,19 @@ module Backtest
     end
 
     def summary
-      capital_at_last_date = account.capital(start_date, end_date).last
+      capitals = account.capital(start_date, end_date)
+      capital_at_last_date = capitals.last
       days = Date.strptime(end_date) - Date.strptime(start_date)
       earnings = capital_at_last_date[:worth] - capital
-      annualized_return = (earnings / capital) / days * 365
+      annualized_returns = (earnings / capital) / days * 365
+      earnings_of_benchmark =
+        benchmark_data.last['close'] - benchmark_data.first['open']
+      benchmark_annualized_returns =
+        (earnings_of_benchmark / benchmark_data.first['open']) / days * 365
+
       {
-        annualized_return: annualized_return
+        annualized_returns: annualized_returns.to_f, # 策略年化收益率
+        benchmark_annualized_returns: benchmark_annualized_returns.to_f # 基准年化收益率
       }
     end
   end
