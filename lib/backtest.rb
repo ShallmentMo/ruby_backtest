@@ -64,7 +64,9 @@ module Backtest
       change = (object['close'] - benchmark_init).to_f / benchmark_init
       {
         'date' => date.strftime(Data::DATE_FORMAT),
-        'change' => change
+        'change' => change,
+        'close' => object['close'],
+        'open' => object['open']
       }
     end.reject(&:nil?)
     # puts strategy.benchmark_data
