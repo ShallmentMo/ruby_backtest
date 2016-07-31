@@ -100,6 +100,17 @@ module Backtest
       alpha = annualized_returns - returns_ratio_of_no_risk -
               beta * (benchmark_annualized_returns - returns_ratio_of_no_risk)
 
+      # 计算信息比率
+      standard_deviation_of_daily_returns_and_benchmark_daily_returns =
+        Math.sqrt(benchmark_data.reduce(0) do |memo, object|
+          daily_returns_of_capitals = filtered_capitals.find do |capital|
+            capital[:date] == object['date']
+          end[:daily_returns]
+          memo + (object['daily_returns'] - daily_returns_of_capitals)**2
+        end / days)
+      information_ratio =
+        (annualized_returns - benchmark_annualized_returns) / standard_deviation_of_daily_returns_and_benchmark_daily_returns
+
       {
         annualized_returns: annualized_returns.to_f.round(4),
         benchmark_annualized_returns:
@@ -107,7 +118,8 @@ module Backtest
         sharpe_ratio: sharpe_ratio.to_f.round(4),
         volatility: volatility.round(4),
         beta: beta.to_f.round(4),
-        alpha: alpha.to_f.round(4)
+        alpha: alpha.to_f.round(4),
+        information_ratio: information_ratio.to_f.round(4)
       }
     end
   end
