@@ -96,11 +96,11 @@ module Backtest
       beta =
         covariance_of_daily_returns_and_benchmark_daily_returns / variance_of_benchmark_daily_returns
 
-      # 计算阿尔法
+      # 计算阿尔法 alpha
       alpha = annualized_returns - returns_ratio_of_no_risk -
               beta * (benchmark_annualized_returns - returns_ratio_of_no_risk)
 
-      # 计算信息比率
+      # 计算信息比率 information_ratio
       standard_deviation_of_daily_returns_and_benchmark_daily_returns =
         Math.sqrt(benchmark_data.reduce(0) do |memo, object|
           daily_returns_of_capitals = filtered_capitals.find do |capital|
@@ -111,6 +111,24 @@ module Backtest
       information_ratio =
         (annualized_returns - benchmark_annualized_returns) / standard_deviation_of_daily_returns_and_benchmark_daily_returns
 
+      # 计算最大回撤 max_drawdown
+      filtered_capitals.each do |object|
+        object_with_minimum_worth_after_object = filtered_capitals.select do |capital|
+          Date.strptime(capital[:date], '%F') > Date.strptime(object[:date], '%F')
+        end.min_by do |capital|
+          capital[:worth]
+        end
+        if object_with_minimum_worth_after_object
+          object[:drawdown] =
+            1 - object[:worth] / object_with_minimum_worth_after_object[:worth]
+        end
+      end
+      max_drawdown = filtered_capitals.select do |capital|
+        capital[:drawdown]
+      end.max_by do |capital|
+        capital[:drawdown]
+      end[:drawdown]
+
       {
         annualized_returns: annualized_returns.to_f.round(4),
         benchmark_annualized_returns:
@@ -119,7 +137,8 @@ module Backtest
         volatility: volatility.round(4),
         beta: beta.to_f.round(4),
         alpha: alpha.to_f.round(4),
-        information_ratio: information_ratio.to_f.round(4)
+        information_ratio: information_ratio.to_f.round(4),
+        max_drawdown: max_drawdown.to_f.round(4)
       }
     end
   end
