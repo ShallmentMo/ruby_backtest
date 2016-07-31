@@ -26,6 +26,9 @@ module Backtest
       filtered_capitals = capitals.select do |object|
         Data.open_dates.include? object[:date]
       end
+      # 这里用的无风险利率是一年期定存利率 1.5%
+      returns_ratio_of_no_risk = 0.015
+
 
       # 计算年化收益率 annualized_returns
       capital_at_last_date = filtered_capitals.last
@@ -59,8 +62,7 @@ module Backtest
       volatility = Math.sqrt(250 / (days - 1) * quadratic_sum_of_daily_returns)
 
       # 计算夏普比率 sharpe_ratio
-      # 这里用的无风险利率是一年期定存利率 1.5%
-      sharpe_ratio = (annualized_returns - 0.015) / volatility
+      sharpe_ratio = (annualized_returns - returns_ratio_of_no_risk) / volatility
 
       # 计算贝塔 beta
       sum_of_benchmark_daily_returns = 0
@@ -94,13 +96,18 @@ module Backtest
       beta =
         covariance_of_daily_returns_and_benchmark_daily_returns / variance_of_benchmark_daily_returns
 
+      # 计算阿尔法
+      alpha = annualized_returns - returns_ratio_of_no_risk -
+              beta * (benchmark_annualized_returns - returns_ratio_of_no_risk)
+
       {
         annualized_returns: annualized_returns.to_f.round(4),
         benchmark_annualized_returns:
           benchmark_annualized_returns.to_f.round(4),
         sharpe_ratio: sharpe_ratio.to_f.round(4),
         volatility: volatility.round(4),
-        beta: beta.to_f.round(4)
+        beta: beta.to_f.round(4),
+        alpha: alpha.to_f.round(4)
       }
     end
   end
